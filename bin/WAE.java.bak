@@ -1,0 +1,375 @@
+package com.prach.mashup.wae;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.util.Log;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
+
+public class WAE extends Activity {
+	public int pagecount = 0;
+	private  WebView browser = null;
+	private final int BARCODE_INTENT = 0x002;
+	/*public static String ProductTitle = null;
+	public static String BookDescription = null;
+	public static String BookReview = null;
+	public static String BookImage = null;*/
+	private JSHandler jsh = new JSHandler();
+	/** Called when the activity is first created. */
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
+
+		browser = (WebView) findViewById(R.id.browser);
+		
+		WebSettings settings = browser.getSettings();
+		settings.setJavaScriptEnabled(true);
+		browser.clearCache(true);
+
+		browser.setWebChromeClient(new WebChromeClient());
+		
+		browser.addJavascriptInterface(jsh,"prach");
+		//loadPagesA("9780470344712");
+		loadPagesB("Professional Android Application Development");
+		//takeBarcode();
+	}
+	
+	public void loadPagesA(final String barcode){
+		//final String barcodecontent = barcode;
+		
+
+		browser.setWebViewClient(new WebViewClient() {
+			@Override
+			public void onPageStarted(WebView view,String url,Bitmap favicon){
+				Toast.makeText(getApplicationContext(), "Loading["+pagecount+"]:\n"+url, Toast.LENGTH_SHORT).show();
+			}
+
+			@Override  
+			public void onPageFinished(WebView view, String url){  
+				if(pagecount==0){
+					Log.d("com.prach.mashup.WAE","Page["+pagecount+"]:finished");
+					Toast.makeText(getApplicationContext(), "Page["+pagecount+"]:finished", Toast.LENGTH_SHORT).show();
+					browser.loadUrl("javascript:"+
+							"var tagArray1 = document.getElementsByTagName('form');\n"+
+							"var parentElement;\n"+
+							"for(var i=0;i<tagArray1.length;i++)\n"+
+							"    if(i==0&&tagArray1[i].name=='site-search')\n"+
+							"        parentElement = tagArray1[i];\n"+
+							"var tagArray2 = parentElement.getElementsByTagName('input');\n"+
+							"var childElement;\n"+
+							"for(var i=0;i<tagArray2.length;i++)\n"+
+							"    if(i==0&&tagArray2[i].id=='twotabsearchtextbox'&&tagArray2[i].name=='field-keywords'&&tagArray2[i].className=='searchSelect')\n"+
+							"        childElement = tagArray2[i];\n"+
+							"childElement.value='"+barcode+"';\n"+
+							"childElement.form.submit();\n"
+					);
+					pagecount++;
+				}else if(pagecount==1){
+					Log.d("com.prach.mashup.WAE","Page["+pagecount+"]:finished");
+					Toast.makeText(getApplicationContext(), "Page["+pagecount+"]:finished", Toast.LENGTH_SHORT).show();
+					browser.loadUrl("javascript:"+
+							"var tagArray1 = document.getElementsByTagName('div');\n"+
+							"var parentElement;\n"+
+							"for(var i=0;i<tagArray1.length;i++)\n"+
+							"    if(i==48&&tagArray1[i].className=='productTitle')\n"+
+							"        parentElement = tagArray1[i];\n"+
+							"var tagArray2 = parentElement.getElementsByTagName('a');\n"+
+							"var childElement;\n"+
+							"for(var i=0;i<tagArray2.length;i++)\n"+
+							"    if(i==0)"+
+							"        childElement = tagArray2[i];\n"+
+							"var ProductTitle = childElement.textContent;\n"+
+							"window.prach.save('ProductTitle',ProductTitle);\n"
+					);
+					Log.d("com.prach.mashup.WAE", "ProductTitle="+jsh.ProductTitle);
+					
+					while(!jsh.saved){}
+					loadPagesB(jsh.ProductTitle);
+				}
+			}  
+		}); 
+		//webview.setWebViewClient(new HelloWebViewClient());
+		browser.loadUrl("http://www.amazon.com/?ie=UTF8&force-full-site=1");
+		//Toast.makeText(this, "Loading["+pagecount+"]:\n"+browser.getUrl(), Toast.LENGTH_SHORT).show();
+	}
+	
+	public void loadPagesB(final String productTitle){
+		jsh.saved = false;
+		Log.d("com.prach.mashup.WAE", "loadPagesB:"+productTitle);
+		//final String barcodecontent = barcode;
+		pagecount=0;
+		//browser = (WebView) findViewById(R.id.browser);
+
+		//WebSettings settings = browser.getSettings();
+		//settings.setJavaScriptEnabled(true);
+		//browser.clearCache(true);
+
+		//browser.setWebChromeClient(new WebChromeClient());
+
+		//browser.addJavascriptInterface(new JSHandler(),"prach");
+
+		browser.setWebViewClient(new WebViewClient() {
+			@Override
+			public void onPageStarted(WebView view,String url,Bitmap favicon){
+				
+				Toast.makeText(getApplicationContext(), "Loading["+pagecount+"]:\n"+url, Toast.LENGTH_SHORT).show();
+			}
+ 
+			@Override  
+			public void onPageFinished(WebView view, String url){  
+				if(pagecount==0){
+					/*Log.d("com.prach.mashup.WAE","Page["+pagecount+"]:finished");
+					Toast.makeText(getApplicationContext(), "Page["+pagecount+"]:finished", Toast.LENGTH_SHORT).show();
+					browser.loadUrl("javascript:"+
+							"var tagArray1 = document.getElementsByTagName('form');\n"+
+							"var parentElement;\n"+
+							"for(var i=0;i<tagArray1.length;i++)\n"+
+							"    if(i==0&&tagArray1[i].name=='headerSearchForm')\n"+
+							"        parentElement = tagArray1[i];"+
+							"var tagArray2 = parentElement.getElementsByTagName('input');\n"+
+							"var childElement;\n"+
+							"for(var i=0;i<tagArray2.length;i++)\n"+
+							"    if(i==1&&tagArray2[i].id=='search_query'&&tagArray2[i].name=='search[query]')\n"+
+							"        childElement = tagArray2[i];"+
+							"childElement.value = '"+productTitle+"';\n"+
+							"childElement.form.submit();\n"
+					);
+					pagecount++;
+				}else if(pagecount==1){
+					Log.d("com.prach.mashup.WAE","Page["+pagecount+"]:finished");
+					Toast.makeText(getApplicationContext(), "Page["+pagecount+"]:finished", Toast.LENGTH_SHORT).show();
+					browser.loadUrl("javascript:"+
+							"var tagArray1 = document.getElementsByTagName('table');\n"+
+							"var parentElement;\n"+
+							"for(var i=0;i<tagArray1.length;i++)\n"+
+							"    if(i==0&&tagArray1[i].className=='tableList')\n"+
+							"        parentElement = tagArray1[i];\n"+
+							"var tagArray2 = parentElement.getElementsByTagName('a');\n"+
+							"var childElement;\n"+
+							"for(var i=0;i<tagArray2.length;i++)\n"+
+							"    if(i==1&&tagArray2[i].className=='bookTitle')\n"+
+							"        childElement = tagArray2[i];\n"+
+							"window.location = childElement.href;\n"
+					);
+					pagecount++;
+				}else if(pagecount==2){*/
+					Log.d("com.prach.mashup.WAE","Page["+pagecount+"]:finished");
+					Toast.makeText(getApplicationContext(), "Page["+pagecount+"]:finished", Toast.LENGTH_SHORT).show();
+					/*browser.loadUrl("javascript:"+
+							"var tagArray1 = document.getElementsByTagName('div');\n"+
+							"var parentElement;\n"+
+							"for(var i=0;i<tagArray1.length;i++){\n"+
+							//"   window.prach.info(i+':'+tagArray1[i].className);" +
+							"   if(i==14&&tagArray1[i].className=='leftAlignedImage'){\n"+
+							"       parentElement = tagArray1[i];\n"+
+							"	}" +
+							"}" +
+							//"window.prach.info(parentElement);"+
+							"var tagArray2 = parentElement.getElementsByTagName('img');\n"+
+							"window.prach.info('here 2');"+
+							"var childElement;\n"+
+							"for(var i=0;i<tagArray2.length;i++)\n"+
+							"    if(i==0)\n"+
+							"        childElement = tagArray2[i];\n"+
+							"var BookImage = childElement.src;\n"+
+							"window.prach.save('BookImage',BookImage);\n"
+					);
+					browser.loadUrl("javascript:"+		
+							"var tagArray1 = document.getElementsByTagName('div');\n"+
+							"var parentElement;\n"+
+							"for(var i=0;i<tagArray1.length;i++)\n"+
+							"    if(i==37&&(tagArray1[i].className.indexOf('infoBoxRowItem')!=-1||tagArray1[i].className.indexOf('reviewText')!=-1))\n"+
+							"        parentElement = tagArray1[i];\n"+
+							"var tagArray2 = parentElement.getElementsByTagName('div');\n"+
+							"var childElement;\n"+
+							"for(var i=0;i<tagArray2.length;i++)\n"+
+							"    if(i==0&&tagArray2[i].className=='floatingBox')\n"+
+							"        childElement = tagArray2[i];\n"+
+							"var BookDescription = childElement.innerHTML;\n"+
+							"window.prach.save('BookDescription',BookDescription);\n"
+					);*/
+					browser.loadUrl("javascript:"+			
+							"var tagArray1 = document.getElementsByTagName('div');\n"+
+							"var parentElement;\n"+
+							"for(var i=0;i<tagArray1.length;i++)\n"+
+							"    if(i==68&&tagArray1[i].className=='bigBoxContent')\n"+
+							"        parentElement = tagArray1[i];\n"+
+							"var tagArray2 = parentElement.getElementsByTagName('span');\n"+
+							"var childElement;\n"+
+							"var BookReview = '';\n"+
+							"for(var i=0;i<tagArray2.length;i++)\n"+
+							"    if(tagArray2[i].className=='reviewText'){\n"+
+							"        childElement = tagArray2[i];\n"+
+							"        BookReview += (childElement.textContent+'\\n');\n"+
+							"    }\n"+
+							
+							/*"var tagArray1 = document.getElementsByTagName('div');\n"+
+							"var parentElement;\n"+
+							"for(var i=0;i<tagArray1.length;i++)\n"+
+							"    if(i==68&&tagArray1[i].className=='bigBoxContent')\n"+
+							"        parentElement = tagArray1[i];\n"+
+							"var tagArray2 = parentElement.getElementsByTagName('span');\n"+
+							"window.prach.info('here');\n"+
+							"window.prach.info('length:'+tagArray2.length);\n"+
+							"var childElement;\n"+
+							"var BookReview = '';\n"+
+							"for(var i=0;i<tagArray2.length;i++){\n"+
+							//"    window.prach.info(i+':'+tagArray2[i].className);" +
+							"    if(tagArray2[i].className=='reviewText'){\n"+
+							//"        window.prach.info(i+':'+tagArray2[i].textContent);"+
+							"        childElement = tagArray2[i];"+
+							"        BookReview += childElement.textContent;\n"+
+							"        BookReview += '\\n';\n"+
+							//"        window.prach.add('BookReview',childElement.textContent);\n"+
+							"    }\n"+
+							"}\n"+ 
+							//"window.prach.info('"+jsh.BookReview+"');\n"*/
+							"window.prach.save('BookReview',BookReview);\n"
+					);
+					//pagecount++; 
+				}
+			}  
+		}); 
+		//webview.setWebViewClient(new HelloWebViewClient());
+		//browser.loadUrl("http://www.goodreads.com/");
+		browser.loadUrl("http://www.goodreads.com/book/show/3429846.Professional_Android_Application_Development");
+		//Toast.makeText(this, "Loading["+pagecount+"]:\n"+browser.getUrl(), Toast.LENGTH_SHORT).show();
+		
+	}
+
+	public  class  JSHandler{
+		public String ProductTitle;
+		public String BookDescription = "";
+		public String BookReview = "";
+		public String BookImage = "";
+		public boolean saved = false;
+		
+		public JSHandler(){
+			Log.d("com.prach.mashup.WAE", "JSHandler();");
+		} 
+		
+		public void save(final String param,final String input){
+			saved = false;
+			Log.d("com.prach.mashup.WAE", "save();");
+			if(param.equals("ProductTitle")){
+				Log.d("com.prach.mashup.WAE", "input:"+input);
+				ProductTitle = input.split(" \\(")[0]; 
+				Log.d("com.prach.mashup.WAE", "ProductTitle:"+ProductTitle);
+			}else if(param.equals("BookDescription")){
+				BookDescription = removeTags(input);
+				Log.d("com.prach.mashup.WAE", "BookDescription:"+BookDescription);
+			}else if(param.equals("BookReview")){
+				BookReview = input;
+				Log.d("com.prach.mashup.WAE", "BookReview:"+BookReview);
+			}else if(param.equals("BookImage")){
+				BookImage = input;
+				Log.d("com.prach.mashup.WAE", "BookImage:"+BookImage);
+			}
+			saved = true;
+		}
+		
+		public void info(String input){
+			Log.i("com.prach.mashup.WAE", "info:"+input);
+		}
+		
+		public void add(String param, String input){
+			saved = false;
+			Log.d("com.prach.mashup.WAE", "add("+param+");");
+			if(param.equals("ProductTitle")){
+				Log.d("com.prach.mashup.WAE", "input:"+input);
+				ProductTitle = input.split(" \\(")[0]; 
+				//Log.d("com.prach.mashup.WAE", "ProductTitle:"+ProductTitle);
+			}else if(param.equals("BookDescription")){
+				BookDescription += (removeTags(input)+"\n");
+				//Log.d("com.prach.mashup.WAE", "BookDescription:"+BookDescription);
+			}else if(param.equals("BookReview")){
+				BookReview += (input+"\n");
+				//Log.d("com.prach.mashup.WAE", "BookReview:"+BookReview);
+			}else if(param.equals("BookImage")){
+				BookImage += (input+"\n");
+				//Log.d("com.prach.mashup.WAE", "BookImage:"+BookImage);
+			}
+			saved = true;
+		}
+	}
+
+	/*@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) { 
+		if (keyCode == KeyEvent.KEYCODE_BACK) { 
+			if (pagecount>0){ 
+				pagecount--;
+				browser.loadUrl("http://www.alc.co.jp/");
+				return false; 
+			}else if(pagecount==0){
+				return super.onKeyDown(keyCode, event);
+			}
+		}
+
+		return super.onKeyDown(keyCode, event);
+	}*/ 
+
+	public void loadUrl(String url){
+		Toast.makeText(this, "Loading["+pagecount+"]:\n"+browser.getUrl(), Toast.LENGTH_SHORT).show();
+		browser.loadUrl(url);
+	}
+
+	@Override
+	protected void onResume(){
+		super.onResume();
+	}
+
+	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		if (requestCode == BARCODE_INTENT) {
+			if (resultCode == RESULT_OK) {
+				String contents = intent.getStringExtra("SCAN_RESULT");
+				//String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+				Log.d("com.prach.mashup.WAE", "BarcodeContents:"+contents);
+				loadPagesA(contents);
+				//showDialog("Scan Succeed", "Format: " + format + "\nContents: " + contents);
+			} else if (resultCode == RESULT_CANCELED) {
+				showDialog("Scan failed", "Action Canceled");
+				takeBarcode();
+			}
+		} 
+	}
+	
+	private void showDialog(String title, String message) {
+    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton("OK", null);
+        builder.show();
+    }
+	
+	public void takeBarcode(){
+		Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+        startActivityForResult(intent, BARCODE_INTENT);	
+	}
+	
+	public String removeTags(String str){
+		String originalString = str.replaceAll("\\<.*?\\>", "<>");
+		originalString = originalString.replaceAll("<><>", ",\n");
+		originalString = originalString.replaceAll("<>", "");
+		return originalString;
+	}
+	
+	/*final class MyWebChromeClient extends WebChromeClient {
+		@Override
+        public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+            Log.d("com.prach.mashup.wae", message);
+            result.confirm();
+            return true;
+        }
+		
+		public void onConsoleMessage(String message, int lineNumber, String sourceID) {
+            Log.d("com.prach.mashup.wae", message + " -- From line " + lineNumber + " of " + sourceID);
+        }
+    }*/
+}
